@@ -1,7 +1,8 @@
 import { MAX_CONNECTIONS } from "./config";
 import { createNewConnection } from "./createNewConnection";
+import { errorMsg } from "./helpers";
 import { Connection } from "./types/Connection";
-import { ClientMessage } from "./types/messages";
+import { ClientMessage, ServerMessage } from "./types/messages";
 
 /**
  * Routes the messages according to the protocol layed out in the README.md.
@@ -14,7 +15,7 @@ export async function handleMessage(
     connections: { [uuid: string]: Connection },
     connId: string,
     message: ClientMessage
-) {
+): Promise<ServerMessage> {
     if (message.init) {
         const { host, port, username, behavior } = message.init;
         // Counts number of players connected to a server via this adapter.
@@ -34,4 +35,6 @@ export async function handleMessage(
             behavior
         );
     }
+
+    return errorMsg("Unsupported operation.");
 }

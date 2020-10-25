@@ -1,18 +1,18 @@
 import * as express from "express";
 import * as http from "http";
 import * as WebSocket from "ws";
-import { ClientMessage, ErrorMessage } from "./types/messages";
-import { createNewConnection } from "./createNewConnection";
+import { ClientMessage, ServerMessage } from "./types/messages";
 import { v4 as uuidv4 } from "uuid";
-import { MAX_CONNECTIONS } from "./config";
 import { Connection } from "./types/Connection";
 import { handleMessage } from "./handleMessage";
+import { errorMsg, okMsg } from "./helpers";
 
 const server = http.createServer(express());
 
 // Abstraction over http server for WS.
 const wss = new WebSocket.Server({ server });
 
+// The global state with active connections.
 const connections: { [uuid: string]: Connection } = {};
 
 wss.on("connection", (ws: WebSocket) => {
@@ -26,14 +26,16 @@ wss.on("connection", (ws: WebSocket) => {
             const message: ClientMessage = JSON.parse(rawMessage);
 
             try {
-                await handleMessage(connections, connId, message);
+                sendToClient(ws, await handleMessage(
+                    connections,
+                    connId,
+                    message
+                ));
             } catch (error) {
-                const message: ErrorMessage = { error: error.message };
-                ws.send(message);
+                sendToClient(ws, errorMsg(error.message));
             }
         } catch {
-            const message: ErrorMessage = { error: "Invalid JSON." };
-            ws.send(message);
+            sendToClient(ws, errorMsg("Invalid JSON."));
         }
     });
 
@@ -47,10 +49,13 @@ wss.on("connection", (ws: WebSocket) => {
         }
     });
 
-    ws.send("connected");
+    sendToClient(ws, okMsg());
 });
 
-//start our server
 server.listen(process.env.PORT || 8999, () => {
     console.log(`Minecraft adapter started on ${server.address()}.`);
 });
+
+function sendToClient(ws: WebSocket, message: ServerMessage) {
+    ws.send(JSON.stringify(message));
+}

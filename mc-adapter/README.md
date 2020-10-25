@@ -9,7 +9,7 @@ See the `.env.example` file for configuration options. Before you run the adapte
 ## Protocol
 All payloads are JSON strings.
 
-Upon connection, the server sends a message `connected`. The server then waits for the client to send a message `init` which tells the adapter how to set up the bot.
+Upon connection, the server sends [an `ok` message](#ok-message). The server then waits for the client to send a message `init` which tells the adapter how to set up the bot.
 
 ```
 init message
@@ -26,17 +26,7 @@ init message
 
 The property `behavior` selects some useful preprogrammed patterns which we want to automate. It depends on what the adapter has built-in. See [list of behaviors](#list-of-behaviors) for the enumeration of what values the `behavior` property can have.
 
-If there's an issue connecting to the server, it sends back [an `error` message][error-message]. After the adapter connects to the server, it sends back a `ready` message.
-
-```
-ready message
----
-{
-    "ready": {}
-}
-```
-
-This signal lets the client know that the state broadcasting is about to start and it can send actions.
+If there's an issue connecting to the server, it sends back [an `error` message][#error-message]. After the adapter connects to the server, it sends back an `ok` message. This signal lets the client know that the state broadcasting is about to start and it can send actions.
 
 TODO: State broadcast, apply action, reward broadcast.
 TODO: Respawn.
@@ -57,6 +47,15 @@ error message
 The `reason` property gives an explanation of what went wrong.
 
 There is no error message code or no way of telling in response to which message did the error occur. While this would be a nice to have, it is not valuable enough at the moment to spend time on.
+
+### Ok message
+```
+ok message
+---
+{
+    "ok": {}
+}
+```
 
 ### List of behaviors
 #### `run-and-hit`

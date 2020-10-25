@@ -11,6 +11,9 @@ export interface InitPayload {
 
 export type Behavior = "hit-and-run";
 
-export interface ErrorMessage {
-    error: string;
+export interface ServerMessage {
+    error?: {
+        reason: string;
+    };
+    ok?: {};
 }
