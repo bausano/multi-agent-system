@@ -1,11 +1,12 @@
 import * as express from "express";
 import * as http from "http";
 import * as WebSocket from "ws";
-import { ClientMessage } from "./types/messages";
+import { ClientMessage, ErrorMessage } from "./types/messages";
 import { createNewConnection } from "./createNewConnection";
 import { v4 as uuidv4 } from "uuid";
 import { MAX_CONNECTIONS } from "./config";
 import { Connection } from "./types/Connection";
+import { handleMessage } from "./handleMessage";
 
 const server = http.createServer(express());
 
@@ -20,27 +21,19 @@ wss.on("connection", (ws: WebSocket) => {
     const connId = uuidv4();
 
     ws.on("message", async (rawMessage: string) => {
-        // FIXME: Validation of the message.
-        const message: ClientMessage = JSON.parse(rawMessage);
+        try {
+            // FIXME: Validation of the message.
+            const message: ClientMessage = JSON.parse(rawMessage);
 
-        if (message.init) {
-            const { host, port, username, behavior } = message.init;
-            // Counts number of players connected to a server via this adapter.
-            // This allows a single adapter runtime work for multiple MC servers.
-            const connectionsAtServer = Object.values(connections).filter(
-                (conn) => conn.host === host && conn.port === port
-            ).length;
-
-            if (connectionsAtServer >= MAX_CONNECTIONS) {
-                throw new Error("Server is full.");
+            try {
+                await handleMessage(connections, connId, message);
+            } catch (error) {
+                const message: ErrorMessage = { error: error.message };
+                ws.send(message);
             }
-
-            connections[connId] = await createNewConnection(
-                host,
-                port,
-                username,
-                behavior
-            );
+        } catch {
+            const message: ErrorMessage = { error: "Invalid JSON." };
+            ws.send(message);
         }
     });
 

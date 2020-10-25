@@ -10,3 +10,7 @@ export interface InitPayload {
 }
 
 export type Behavior = "hit-and-run";
+
+export interface ErrorMessage {
+    error: string;
+}
