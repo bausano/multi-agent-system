@@ -17,7 +17,7 @@ export async function createNewConnection(
 
     // FIXME: When this gets large get rid of switch and move to separate dir.
     switch (behavior) {
-        case "hit-and-run":
+        case "run-and-hit":
             const SWING_ARM_INTERVAL_MS = 1000;
             bot.setControlState("forward", true);
             setInterval(() => bot.swingArm(), SWING_ARM_INTERVAL_MS);
@@ -53,7 +53,7 @@ export async function spawnBot(
         try {
             return await new Promise((resolve, reject) => {
                 bot.addListener("spawn", () => {
-                    console.log(`Prey ${bot.username} ready.`);
+                    console.log(`Player ${bot.username} ready.`);
                     resolve(bot);
                 });
 

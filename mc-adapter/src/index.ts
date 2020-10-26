@@ -21,16 +21,16 @@ wss.on("connection", (ws: WebSocket) => {
     const connId = uuidv4();
 
     ws.on("message", async (rawMessage: string) => {
+        console.log(`New message from connection ${connId}.`);
         try {
             // FIXME: Validation of the message.
             const message: ClientMessage = JSON.parse(rawMessage);
 
             try {
-                sendToClient(ws, await handleMessage(
-                    connections,
-                    connId,
-                    message
-                ));
+                sendToClient(
+                    ws,
+                    await handleMessage(connections, connId, message)
+                );
             } catch (error) {
                 sendToClient(ws, errorMsg(error.message));
             }
@@ -42,10 +42,14 @@ wss.on("connection", (ws: WebSocket) => {
     // If the connection was closed, disconnect from the MC server and remove
     // the data from the global object.
     ws.on("close", () => {
-        try {
-            connections[connId].close();
-        } finally {
-            delete connections[connId];
+        console.log(`Connection ${connId} has been closed.`);
+
+        if (connections[connId]) {
+            try {
+                connections[connId].close();
+            } finally {
+                delete connections[connId];
+            }
         }
     });
 
@@ -53,7 +57,9 @@ wss.on("connection", (ws: WebSocket) => {
 });
 
 server.listen(process.env.PORT || 8999, () => {
-    console.log(`Minecraft adapter started on ${server.address()}.`);
+    console.log(
+        `Minecraft adapter started on ${JSON.stringify(server.address())}.`
+    );
 });
 
 function sendToClient(ws: WebSocket, message: ServerMessage) {

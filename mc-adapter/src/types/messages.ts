@@ -9,7 +9,7 @@ export interface InitPayload {
     behavior: Behavior;
 }
 
-export type Behavior = "hit-and-run";
+export type Behavior = "run-and-hit";
 
 export interface ServerMessage {
     error?: {

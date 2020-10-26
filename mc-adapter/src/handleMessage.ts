@@ -1,6 +1,6 @@
 import { MAX_CONNECTIONS } from "./config";
 import { createNewConnection } from "./createNewConnection";
-import { errorMsg } from "./helpers";
+import { errorMsg, okMsg } from "./helpers";
 import { Connection } from "./types/Connection";
 import { ClientMessage, ServerMessage } from "./types/messages";
 
@@ -34,6 +34,8 @@ export async function handleMessage(
             username,
             behavior
         );
+
+        return okMsg()
     }
 
     return errorMsg("Unsupported operation.");

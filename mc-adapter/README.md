@@ -1,5 +1,5 @@
 # Minecraft adapter
-Since [Mineflayer][mineflayer-git] seem to be the most mature option to communicate with a MC server using high-level APIs, we construct an adapter which exports useful APIs over [WebSockets][websockets-npm].
+Since [Mineflayer][mineflayer-git] seem to be the most mature option to communicate with a MC server using [high-level APIs][mineflayer-api], we construct an adapter which exports useful APIs over [WebSockets][websockets-npm].
 
 The protocol has been designed specifically for the use case of consuming it from python's environment class. That is a single connection to the adapter supports one player.
 
@@ -64,3 +64,4 @@ This behavior sets the bot to always move forward (as if it always held **W**) a
 <!-- Invisible List of References -->
 [mineflayer-git]: https://github.com/PrismarineJS/mineflayer
 [websockets-npm]: https://www.npmjs.com/package/websocket
+[mineflayer-api]: https://github.com/PrismarineJS/mineflayer/blob/master/docs/api.md#botswingarmhand
