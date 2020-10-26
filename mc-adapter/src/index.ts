@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Connection } from "./types/Connection";
 import { handleMessage } from "./handleMessage";
 import { errorMsg, okMsg } from "./helpers";
+import { STATE_UPDATE_INTERVAL_MS } from "./config";
+import { collectState } from "./collectState";
 
 const server = http.createServer(express());
 
@@ -39,11 +41,25 @@ wss.on("connection", (ws: WebSocket) => {
         }
     });
 
+    // The interval which collects state and sends it to the client. Alternative
+    // would be to keep one timer and always iterate through all connections.
+    const stateUpdateInterval = setInterval(async () => {
+        try {
+            const conn = connections[connId]
+            if (conn) {
+                sendToClient(ws, await collectState(conn));
+            }
+        } catch (error) {
+            console.log(`Cannot collect state for ${connId} due to`, error);
+        }
+    }, STATE_UPDATE_INTERVAL_MS);
+
     // If the connection was closed, disconnect from the MC server and remove
     // the data from the global object.
     ws.on("close", () => {
         console.log(`Connection ${connId} has been closed.`);
 
+        clearInterval(stateUpdateInterval);
         if (connections[connId]) {
             try {
                 connections[connId].close();

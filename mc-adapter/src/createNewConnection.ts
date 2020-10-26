@@ -17,10 +17,28 @@ export async function createNewConnection(
 
     // FIXME: When this gets large get rid of switch and move to separate dir.
     switch (behavior) {
-        case "run-and-hit":
-            const SWING_ARM_INTERVAL_MS = 1000;
+        case "run-and-hit-ocelot":
             bot.setControlState("forward", true);
-            setInterval(() => bot.swingArm(), SWING_ARM_INTERVAL_MS);
+            bot.setControlState("sneak", true);
+            // Hits closest ocelot. We pick ocelot because they by default run
+            // away from the player and are swift.
+            // FIXME: Clear the interval once it
+            const HIT_OCELOT_INTERVAL = 1000;
+            const hitInterval = setInterval(() => {
+                try {
+                    const nearestEntity = (bot as any).nearestEntity(
+                        ({ name }) => name === "ocelot"
+                    );
+                    if (nearestEntity) {
+                        bot.attack(nearestEntity);
+                    }
+                } catch {
+                    console.log(
+                        `Stopping run-and-hit-ocelot behavior for ${username} due to lost connection.`
+                    );
+                    clearInterval(hitInterval);
+                }
+            }, HIT_OCELOT_INTERVAL);
             break;
         default:
             throw new Error(`Behavior '${behavior}' doesn't exist.`);

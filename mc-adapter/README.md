@@ -28,8 +28,36 @@ The property `behavior` selects some useful preprogrammed patterns which we want
 
 If there's an issue connecting to the server, it sends back [an `error` message][#error-message]. After the adapter connects to the server, it sends back an `ok` message. This signal lets the client know that the state broadcasting is about to start and it can send actions.
 
-TODO: State broadcast, apply action, reward broadcast.
-TODO: Respawn.
+The server will periodically send a state update message with information about the environment. Currently the state message contains vectors without any hint to what the vectors represent. The protocol makes guarantees about the length of each vector.
+
+```
+state message
+---
+{
+    "state": {
+        "entities": number[][],
+        "walls": number[]
+    }
+}
+```
+
+The `walls` property is always 9 numbers which represent the area around the bot. The numbers can be either 1 for wall present, or 0 for no wall.
+
+```
++---|---|---+
+| 0 | 1 | 2 |
++---|---|---+
+| 3 | 4 | 5 |
++---|---|---+
+| 6 | 7 | 8 |
++---|---|---+
+```
+
+The `entities` property can have at most 10 vectors. Each of the vectors represent a nearby entity. Each entity is then represented with 7 numbers which include information about username (hashed), health, position, velocity and distance to the bot.
+
+The frequency at which the state update is configurable with `STATE_UPDATE_INTERVAL_MS`.
+
+TODO: apply an action, broadcast a reward, respawn
 
 ### Error message
 To let the client know that something went wrong, the server sends `error` message.
@@ -58,8 +86,8 @@ ok message
 ```
 
 ### List of behaviors
-#### `run-and-hit`
-This behavior sets the bot to always move forward (as if it always held **W**) and keep hitting periodically (as if it always clicked left mouse button).
+#### `run-and-hit-ocelot`
+This behavior sets the bot to always move forward (as if it always held **W**) and keep hitting periodically the closest entity if it's an ocelot. We picked ocelot because it is swift and runs away from players by default.
 
 <!-- Invisible List of References -->
 [mineflayer-git]: https://github.com/PrismarineJS/mineflayer

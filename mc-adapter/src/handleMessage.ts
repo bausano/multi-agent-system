@@ -35,7 +35,7 @@ export async function handleMessage(
             behavior
         );
 
-        return okMsg()
+        return okMsg();
     }
 
     return errorMsg("Unsupported operation.");

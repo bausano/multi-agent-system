@@ -8,10 +8,12 @@ async def connect_to_adapter():
     async with websockets.connect(uri) as websocket:
         assert is_ok(await recv_message(websocket)), "Cannot connect to the adapter"
         print("Connected to MC adapter WS server.")
-        await websocket.send(init_message("joe", "localhost", 35591))
+        await websocket.send(init_message("joe", "localhost", 38531))
         assert is_ok(await recv_message(websocket)), "Cannot connect to MC server"
-        print("ZZZzzzz...")
-        await asyncio.sleep(10)
+        while True:
+            print("ZZZzzzz...")
+            await asyncio.sleep(10)
+            print(await recv_message(websocket))
 
 
 async def recv_message(websocket):
@@ -32,7 +34,7 @@ def init_message(username, host, port):
                 "username": username,
                 "host": host,
                 "port": port,
-                "behavior": "run-and-hit",
+                "behavior": "run-and-hit-ocelot",
             }
         }
     )
