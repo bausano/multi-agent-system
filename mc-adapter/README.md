@@ -26,7 +26,7 @@ init message
 
 The property `behavior` selects some useful preprogrammed patterns which we want to automate. It depends on what the adapter has built-in. See [list of behaviors](#list-of-behaviors) for the enumeration of what values the `behavior` property can have.
 
-If there's an issue connecting to the server, it sends back [an `error` message][#error-message]. After the adapter connects to the server, it sends back an `ok` message. This signal lets the client know that the state broadcasting is about to start and it can send actions.
+If there's an issue connecting to the server, it sends back [an `error` message](#error-message). After the adapter connects to the server, it sends back an `ok` message. This signal lets the client know that the state broadcasting is about to start and it can send actions.
 
 The server will periodically send a state update message with information about the environment. Currently the state message contains vectors without any hint to what the vectors represent. The protocol makes guarantees about the length of each vector.
 
