@@ -10,10 +10,17 @@ async def connect_to_adapter():
         print("Connected to MC adapter WS server.")
         await websocket.send(init_message("joe", "localhost", 38531))
         assert is_ok(await recv_message(websocket)), "Cannot connect to MC server"
+        print("Listening for messages...")
         while True:
-            print("ZZZzzzz...")
-            await asyncio.sleep(10)
-            print(await recv_message(websocket))
+            message = await recv_message(websocket)
+            if is_state_update(message):
+                # Pad the entities with zeros.
+                # Put all into one list of numbers.
+                # Store in an env.
+                continue
+            if is_reward_update(message):
+                # Store in an env.
+                continue
 
 
 async def recv_message(websocket):
@@ -25,6 +32,14 @@ def is_ok(message):
         print("Expected ok message, got: ")
         print(message)
     return "ok" in message
+
+
+def is_state_update(message):
+    return "state" in message
+
+
+def is_reward_update(message):
+    return "reward" in message
 
 
 def init_message(username, host, port):
