@@ -45,7 +45,7 @@ wss.on("connection", (ws: WebSocket) => {
     // would be to keep one timer and always iterate through all connections.
     const stateUpdateInterval = setInterval(async () => {
         try {
-            const conn = connections[connId]
+            const conn = connections[connId];
             if (conn) {
                 sendToClient(ws, await collectState(conn));
             }

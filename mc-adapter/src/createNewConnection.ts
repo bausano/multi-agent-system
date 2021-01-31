@@ -14,10 +14,20 @@ export async function createNewConnection(
     behavior: Behavior
 ): Promise<Connection> {
     const bot = await spawnBot(host, port, username);
+    const conn = new Connection(bot, host, port);
 
     // FIXME: When this gets large get rid of switch and move to separate dir.
     switch (behavior) {
         case "run-and-hit-ocelot":
+            bot.on("entityGone", (entity) => {
+                if (entity.name !== "ocelot") {
+                    return;
+                }
+
+                const { x, z } = entity.position;
+                conn.preyDiedInProximity(x, z);
+            });
+
             bot.setControlState("forward", true);
             bot.setControlState("sneak", true);
             // Hits closest ocelot. We pick ocelot because they by default run
@@ -44,7 +54,7 @@ export async function createNewConnection(
             throw new Error(`Behavior '${behavior}' doesn't exist.`);
     }
 
-    return new Connection(bot, host, port);
+    return conn;
 }
 
 /**

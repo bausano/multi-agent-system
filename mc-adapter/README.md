@@ -35,6 +35,7 @@ state message
 ---
 {
     "state": {
+        "reward": number,
         "entities": number[][],
         "walls": number[]
     }
@@ -55,9 +56,11 @@ The `walls` property is always 9 numbers which represent the area around the bot
 
 The `entities` property can have at most 10 vectors. Each of the vectors represent a nearby entity. Each entity is then represented with 7 numbers which include information about username (hashed), health, position, velocity and distance to the bot.
 
+The `reward` property is a single number which tracks how much reward has the bot received since the last time a state update message was broadcast.
+
 The frequency at which the state update is configurable with `STATE_UPDATE_INTERVAL_MS`.
 
-TODO: apply an action, broadcast a reward, respawn
+TODO: apply an action, respawn
 
 ### Error message
 To let the client know that something went wrong, the server sends `error` message.

@@ -1,11 +1,12 @@
 import { MAX_CONNECTIONS } from "./config";
+import { Vec3 } from "vec3";
 import { createNewConnection } from "./createNewConnection";
 import { errorMsg, okMsg } from "./helpers";
 import { Connection } from "./types/Connection";
 import { ClientMessage, ServerMessage } from "./types/messages";
 
 /**
- * Routes the messages according to the protocol layed out in the README.md.
+ * Routes the messages according to the protocol laid out in the README.md.
  *
  * @param connections Dictionary of existing connections
  * @param connId Id of the connection which sent the message
@@ -36,7 +37,14 @@ export async function handleMessage(
         );
 
         return okMsg();
-    }
+    } else if (message.action) {
+        const bot = connections[connId].bot;
+        const { x, z } = message.action.lookAt;
+        const y = bot.entity.position.y + 1;
 
-    return errorMsg("Unsupported operation.");
+        bot.lookAt(new Vec3(x, y, z));
+        return okMsg();
+    } else {
+        return errorMsg("Unsupported operation.");
+    }
 }

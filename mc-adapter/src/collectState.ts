@@ -9,6 +9,7 @@ const WALL_BLOCK = 191;
 /**
  * Observes the space around the bot and summarizes it for the machine learning
  * algorithm.
+ * Includes the reward that the bot got since last time state was collected.
  */
 export async function collectState(conn: Connection): Promise<ServerMessage> {
     const bot = conn.bot;
@@ -23,6 +24,7 @@ export async function collectState(conn: Connection): Promise<ServerMessage> {
     // FIXME: Make the number of entities to send configurable.
     const nearbyEntities = allNearbyEntities
         .slice(0, 9)
+        .filter(({ entity }) => entity.username || entity.name)
         .map(({ sqDist, entity }) => {
             // Puts entity information into a list of numbers. Maybe it'd be
             // better if we published this data in a structured way and then
@@ -34,7 +36,7 @@ export async function collectState(conn: Connection): Promise<ServerMessage> {
             // distance to bedrock is constant.
             // FIXME: There're many issues with the types of the mineflayer lib.
             return [
-                hashString(entity.username || (entity as any).uuid),
+                hashString(entity.username || entity.name),
                 sqDist,
                 entity.position.x,
                 entity.position.z,
@@ -48,7 +50,12 @@ export async function collectState(conn: Connection): Promise<ServerMessage> {
     const walls = wallsAround(bot);
 
     return {
-        state: { walls, entities: nearbyEntities },
+        state: {
+            reward: conn.getRewardSinceLastUpdateAndReset(),
+
+            walls,
+            entities: nearbyEntities,
+        },
     };
 }
 

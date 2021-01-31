@@ -1,5 +1,6 @@
 export interface ClientMessage {
     init?: InitPayload;
+    action?: ActionPayload;
 }
 
 export interface InitPayload {
@@ -7,6 +8,10 @@ export interface InitPayload {
     port: number;
     username: string;
     behavior: Behavior;
+}
+
+export interface ActionPayload {
+    lookAt: { x: number; z: number };
 }
 
 export type Behavior = "run-and-hit-ocelot";
@@ -20,6 +25,9 @@ export interface ServerMessage {
 }
 
 export interface StatePayload {
+    // How much was the bot rewarded since the last time state was observed.
+    reward: number;
+
     // 9 numbers around the bot, each number is either 1 or 0. Each index
     // corresponds to a wall being around a bot on certain position. The
     // position does not change with orientation.
