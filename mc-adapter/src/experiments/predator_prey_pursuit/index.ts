@@ -51,7 +51,7 @@ export class PredatorPreyPursuit implements Experiment<Predator> {
  * ```
  */
 const routes: { [path: string]: Route<Predator> } = {
-    new: { handle: createPredator },
+    init: { handle: createPredator },
     look: { handle: lookAt },
 };
 

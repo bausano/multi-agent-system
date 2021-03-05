@@ -7,7 +7,7 @@ export class Response<T> {
      *
      * If the body is `null`, no message will be send back.
      */
-    constructor(private body: T | null = null) {
+    constructor(public body: T | null = null) {
         //
     }
 
@@ -16,9 +16,5 @@ export class Response<T> {
      */
     public static empty(): Response<Empty> {
         return new Response();
-    }
-
-    public getBody(): string | null {
-        return this.body === null ? null : JSON.stringify(this.body);
     }
 }

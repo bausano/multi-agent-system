@@ -1,40 +1,90 @@
 # Minecraft adapter
-Since [Mineflayer][mineflayer-git] seem to be the most mature option to communicate with a MC server using [high-level APIs][mineflayer-api], we construct an adapter which exports useful APIs over [WebSockets][websockets-npm].
+Since [Mineflayer][mineflayer-git] seem to be the most mature option to
+communicate with a MC server using [high-level APIs][mineflayer-api], we
+construct an adapter which exports useful APIs over
+[WebSockets][websockets-npm].
 
-The protocol has been designed specifically for the use case of consuming it from python's environment class. That is a single connection to the adapter supports one player.
+The protocol has been designed specifically for the use case of consuming it
+from python's environment class. A single connection to the adapter supports
+one agent.
 
 ## Env
-See the `.env.example` file for configuration options. Before you run the adapter, you can clone that file and rename it to `.env`.
+See the `.env.example` file for configuration options. Before you run the
+adapter, you can clone that file and rename it to `.env`.
 
 ## Protocol
-All payloads are JSON strings.
-
-Upon connection, the server sends [an `ok` message](#ok-message). The server then waits for the client to send a message `init` which tells the adapter how to set up the bot.
+All messages are JSON strings which follow the same structure. The server
+schema for success and error messages respectively:
 
 ```
-init message
+{
+  "status": "ok",
+  "body": any
+}
+```
+
+```
+{
+  "status": "err",
+  "message": string
+}
+```
+
+The client is expected to send messages in following schema:
+
+```
+{
+  "route": string,
+  "payload": any
+}
+```
+
+Upon connection, the server sends an ok message with body string `"ready"`. The
+rest depends on the experiment which the adapter runs.
+
+### Predator-prey pursuit (ppp)
+In this experiment, predators (agents) pursuit prey (Minecraft ocelots).
+Ocelots were chosen because they run away from players. An agent automatically
+attacks nearest ocelot (if close enough). An agent is forced to sneak which
+gives the ocelots an advantage. An agent is always walking forward, the agent
+only controls the direction by changing the point at which the Minecraft bot
+looks at. This setup results in a single possible action consisting of two
+floats, the coordinates of the point.
+
+The server waits for the client to send a message `init` which tells the
+adapter how to set up the bot.
+
+```
+init client message
 ---
 {
-    "init": {
-        "host": string,
-        "port": number,
+    "route": "init",
+    "payload": {
         "username": string,
-        "behavior": enum
+        "nearestEntitiesToSend": number
     }
 }
 ```
 
-The property `behavior` selects some useful preprogrammed patterns which we want to automate. It depends on what the adapter has built-in. See [list of behaviors](#list-of-behaviors) for the enumeration of what values the `behavior` property can have.
+The `nearestEntitiesToSend` parameter dictates how much state is observed. See
+docs below.
 
-If there's an issue connecting to the server, it sends back [an `error` message](#error-message). After the adapter connects to the server, it sends back an `ok` message. This signal lets the client know that the state broadcasting is about to start and it can send actions.
+If there's an issue connecting to the server, it sends back an error message.
+After the adapter connects to the server, it sends back an `ok` message. This
+signal lets the client know that the state broadcasting is about to start and
+it can send actions.
 
-The server will periodically send a state update message with information about the environment. Currently the state message contains vectors without any hint to what the vectors represent. The protocol makes guarantees about the length of each vector.
+The server will periodically send a state update message with information about
+the environment. Currently the state message contains vectors without any hint
+to what the vectors represent. The protocol makes some guarantees about the
+length of each vector.
 
 ```
-state message
+state server message
 ---
 {
-    "state": {
+    "status": "ok",
+    "body": {
         "reward": number,
         "entities": number[][],
         "walls": number[]
@@ -42,55 +92,46 @@ state message
 }
 ```
 
-The `walls` property is always 9 numbers which represent the area around the bot. The numbers can be either 1 for wall present, or 0 for no wall.
+The `walls` property is always a 9D vector which represent the area around the
+bot. The numbers can be either 1 for wall present, or 0 for no wall.
 
 ```
-+---|---|---+
++---+---+---+
 | 0 | 1 | 2 |
 +---|---|---+
 | 3 | 4 | 5 |
 +---|---|---+
 | 6 | 7 | 8 |
-+---|---|---+
++---+---+---+
 ```
 
-The `entities` property can have at most 10 vectors. Each of the vectors represent a nearby entity. Each entity is then represented with 7 numbers which include information about username (hashed), health, position, velocity and distance to the bot.
+The `entities` property has exactly `nearestEntitiesToSend` vectors. Each of
+the vectors represent a nearby entity. Each entity is then represented with 7
+numbers which include information about username (hashed), health, position,
+velocity and distance to the bot. This means that when flattened, the
+`entities` property contains `nearestEntitiesToSend` * 7 numbers. If there are
+less than `nearestEntitiesToSend` entities around the agent, the rest will be
+padded with zeros.
 
-The `reward` property is a single number which tracks how much reward has the bot received since the last time a state update message was broadcast.
+The `reward` property is a single number which tracks how much reward has the
+bot received since the last time a state update message was broadcast.
 
-The frequency at which the state update is configurable with `STATE_UPDATE_INTERVAL_MS`.
+The frequency at which the state update is configurable with
+`SEND_STATE_PERIOD_MS`.
 
-TODO: apply an action, respawn
-
-### Error message
-To let the client know that something went wrong, the server sends `error` message.
+The agent changes the point at which the Minecraft bot looks at, thereby
+changing the direction of movement:
 
 ```
-error message
----
+action client message
 {
-    "error": {
-        "reason": string
-    }
+  "route": "look",
+  "payload": {
+    "x": number,
+    "z": number
+  }
 }
 ```
-
-The `reason` property gives an explanation of what went wrong.
-
-There is no error message code or no way of telling in response to which message did the error occur. While this would be a nice to have, it is not valuable enough at the moment to spend time on.
-
-### Ok message
-```
-ok message
----
-{
-    "ok": {}
-}
-```
-
-### List of behaviors
-#### `run-and-hit-ocelot`
-This behavior sets the bot to always move forward (as if it always held **W**) and keep hitting periodically the closest entity if it's an ocelot. We picked ocelot because it is swift and runs away from players by default.
 
 <!-- Invisible List of References -->
 [mineflayer-git]: https://github.com/PrismarineJS/mineflayer

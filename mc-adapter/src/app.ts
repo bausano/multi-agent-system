@@ -2,7 +2,7 @@ import * as WebSocket from "ws";
 import { AppState } from "@/models/app_state";
 import { Config } from "@/models/config";
 import { Agent } from "@/models/agent";
-import { Empty } from "@/models/response";
+import { Response } from "@/models/response";
 import { Experiment } from "@/contracts/experiment";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,12 +31,15 @@ export class App<T extends Agent> {
             const connId = uuidv4();
 
             ws.on("message", async (rawMessage: string) =>
-                this.handleMessage(connId, rawMessage)
-                    .then((response) => this.sendToClient(conn, response))
-                    .catch((err) => console.error("TODO: err", err))
+                this.handleMessage(conn, connId, rawMessage).catch((err) =>
+                    this.sendErr(conn, err)
+                )
             );
 
             ws.on("close", () => this.closeConn(connId));
+
+            // acknowledges the client
+            this.sendOk(conn, new Response("ready"));
         });
     }
 
@@ -47,9 +50,10 @@ export class App<T extends Agent> {
      * 3. returning the JSON stringified response body
      */
     private async handleMessage(
+        conn: WebSocket,
         connId: string,
         rawMessage: string
-    ): Promise<string | Empty> {
+    ) {
         const serverMessage = JSON.parse(rawMessage);
 
         if (!serverMessage.route || !serverMessage.payload) {
@@ -61,7 +65,8 @@ export class App<T extends Agent> {
 
         const route = this.experiment.getRouteOrErr(routePath);
         const response = await route.handle(this.appState, connId, payload);
-        return response.getBody();
+
+        this.sendOk(conn, response);
     }
 
     /**
@@ -83,12 +88,24 @@ export class App<T extends Agent> {
      * Sends the response to the client over websocket, unless the body is
      * empty, then it's a no-op.
      */
-    private async sendToClient(conn: WebSocket, body: string | Empty) {
+    private sendOk(conn: WebSocket, response: Response<any>) {
         // if empty (null), then don't send any message
-        if (body === null) {
+        if (response.body === null) {
             return;
         }
 
-        conn.send(body);
+        conn.send(JSON.stringify({ status: "ok", body: response.body }));
+    }
+
+    /**
+     * Sends error message to the client.
+     */
+    private sendErr(conn: WebSocket, err: Error) {
+        conn.send(
+            JSON.stringify({
+                status: "err",
+                message: `${err.name}: ${err.message}`,
+            })
+        );
     }
 }
