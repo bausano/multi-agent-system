@@ -27,6 +27,12 @@ export class Config {
     public mcAddr: { host: string; port: number };
 
     /**
+     * How often should the server send state observation to its clients.
+     * The shorter the period, the faster will the learning be.
+     */
+    public sendStatePeriodMs: number;
+
+    /**
      * App level configuration.
      *
      * @param env Key-value store from which to select environment variables,
@@ -41,6 +47,8 @@ export class Config {
             parseInt(env.MAX_MC_CONNECTION_RETRIES || "3") || 3;
         this.waitForBotSpawnMs =
             parseInt(env.WAIT_FOR_BOT_SPAWN_MS || "10000") || 10000;
+        this.sendStatePeriodMs =
+            parseInt(env.SEND_STATE_PERIOD_MS || "200") || 200;
 
         if (!env.MC_HOST || !parseInt(env.MC_PORT)) {
             throw new Error("MC_HOST and MC_PORT env vars are invalid.");

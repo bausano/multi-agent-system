@@ -1,20 +1,32 @@
 import { Agent } from "@/models/agent";
 import { Config } from "@/models/config";
+import { Bot } from "mineflayer";
 
 export class Predator extends Agent {
+    private constructor(bot: Bot, public nearestEntitiesToSend: number) {
+        super(bot);
+    }
+
     /**
      * Connects to the Minecraft server and sets the bot to:
      * - always walk forward
      * - walk slowly
      * - be rewarded for ocelot death
      * - automatically hit nearest ocelot
+     *
+     * @param nearestEntitiesToSend While the dimension of an array of numbers
+     *          which will represent an entity when environment state is send
+     *          to the client is constant, the number of entities aren't.
+     *          This argument sets the maximum number of entities to send and
+     *          pads with zeroes if there aren't enough entities around.
      */
     public static async spawn(
         config: Config,
-        username: string
+        username: string,
+        nearestEntitiesToSend: number
     ): Promise<Predator> {
         const bot = await Agent.spawnBot(config, username);
-        const predator = new Predator(bot);
+        const predator = new Predator(bot, nearestEntitiesToSend);
 
         // if an ocelot dies, which is our prey, then check how far away the
         // predator was and award reward based on that

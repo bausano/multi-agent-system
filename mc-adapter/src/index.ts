@@ -8,7 +8,7 @@ dotenv();
 
 const config = new Config();
 // here we can select other experiments in future
-const experiment = new PredatorPreyPursuit();
+const experiment = new PredatorPreyPursuit(config);
 
 // create server and listen to new connections
 const ws = createWsServer(config);

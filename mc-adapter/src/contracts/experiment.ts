@@ -1,5 +1,6 @@
 import { Agent } from "@/models/agent";
 import { Route } from "@/contracts/route";
+import { Event } from "./event";
 
 export interface Experiment<T extends Agent> {
     /**
@@ -12,4 +13,9 @@ export interface Experiment<T extends Agent> {
      * every time a new message is received.
      */
     getRouteOrErr(path: string): Route<T>;
+
+    /**
+     * List of periodically executed events.
+     */
+    events(): Event<T>[];
 }
