@@ -1,28 +1,3 @@
-export interface ClientMessage {
-    init?: InitPayload;
-    action?: ActionPayload;
-}
-
-export interface InitPayload {
-    host: string;
-    port: number;
-    username: string;
-    behavior: Behavior;
-}
-
-export interface ActionPayload {
-    lookAt: { x: number; z: number };
-}
-
-export type Behavior = "run-and-hit-ocelot";
-
-export interface ServerMessage {
-    error?: {
-        reason: string;
-    };
-    ok?: {};
-    state?: StatePayload;
-}
 
 export interface StatePayload {
     // How much was the bot rewarded since the last time state was observed.

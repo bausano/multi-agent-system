@@ -1,9 +1,15 @@
 {
   "compilerOptions": {
+    "target": "es6",
     "module": "commonjs",
-    "target": "esnext"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+        "@/*": ["./src/*"],
+        "@ppp/*": ["./src/experiments/predator_prey_pursuit/*"]
+    }
   },
   "include": [
-    "src/**/*"
+    "./src/**/*"
   ]
 }

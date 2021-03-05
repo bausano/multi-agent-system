@@ -1,9 +1,12 @@
 {
   "name": "mc-adapter",
+  "description": "Adapter between python ML and Minecraft bot lib.",
   "version": "0.1.0",
+  "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "fmt": "prettier --write src"
+    "fmt": "prettier --write src",
+    "check": "tsc -p tsconfig.json -noEmit"
   },
   "author": "Michael Bausano",
   "license": "ISC",
