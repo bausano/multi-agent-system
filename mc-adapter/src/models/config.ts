@@ -42,7 +42,7 @@ export class Config {
         env = env || process.env;
 
         this.serverPort = parseInt(env.PORT || "8999") || 8999;
-        this.maxAgents = parseInt(env.MAX_AGENTS || "10") || 10;
+        this.maxAgents = parseInt(env.MAX_AGENTS || "7") || 7;
         this.maxMcConnectionRetries =
             parseInt(env.MAX_MC_CONNECTION_RETRIES || "3") || 3;
         this.waitForBotSpawnMs =
