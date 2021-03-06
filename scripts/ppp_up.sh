@@ -22,6 +22,7 @@ readonly half_cage_size=$(( cage_size / 2 ))
 readonly cage_block="minecraft:oak_fence"
 # the in-game nick of the minecraft account that the admin logs in
 readonly admin_nick=${ADMIN_NICK:-porkbrain}
+readonly cont_name="experiment_ppp"
 
 echo "World height: ${world_height}"
 echo "Cage size: ${cage_size}"
@@ -31,13 +32,21 @@ function rcon {
 
     local cmd=$1
 
-    docker exec mc rcon-cli "${cmd}"
+    docker exec "${cont_name}" rcon-cli "${cmd}"
 }
 
-echo "Spawning server container in detached mode on port ${server_port}..."
+function rcon_mute {
+    ## Executes given command in rcon-cli but doesn't output stdout.
+
+    local cmd=$1
+
+    1>/dev/null rcon ${cmd}
+}
+
+echo "Spawning container '${cont_name}' in detached mode on port ${server_port}..."
 docker run -d --rm \
     -p ${server_port}:25565 \
-    --name experiment_ppp \
+    --name "${cont_name}" \
     -e EULA=TRUE \
     -e DIFFICULTY=peaceful \
     -e GENERATE_STRUCTURES=false \
@@ -50,9 +59,12 @@ docker run -d --rm \
 echo "Waiting for server to be up..."
 # temporarily allow commands to fail as we're checking the status manually
 set +e
-while [ 2>/dev/null 1>&2 rcon "help" -ne 0 ]; do
+2>/dev/null 1>&2 rcon "help"
+while [ $? -ne 0 ]; do
     echo "[$(date)] rcon-cli still not up..."
     sleep 5
+    # repeat the command because of "$?" in the "while"
+    2>/dev/null 1>&2 rcon "help"
 done
 set -e
 
@@ -84,14 +96,20 @@ rcon "op ${admin_nick}"
 # 4 fences
 # TODO: we can perhaps run all jobs in background and then just await then all
 # at the end of the script to speed up
+echo "Building cage..."
 for i in $(seq 0 $cage_size)
 do
     # goes from -50 to 50 over the course of the loop
     x=$(( i - half_cage_size ))
 
-    rcon "setblock ${x} ${world_height} ${half_cage_size} ${cage_block} replace"
-    rcon "setblock ${x} ${world_height} -${half_cage_size} ${cage_block} replace"
-    rcon "setblock ${half_cage_size} ${world_height} ${x} ${cage_block} replace"
-    rcon "setblock -${half_cage_size} ${world_height} ${x} ${cage_block} replace"
-done
+    rcon_mute "setblock ${x} ${world_height} ${half_cage_size} ${cage_block} replace"
+    rcon_mute "setblock ${x} ${world_height} -${half_cage_size} ${cage_block} replace"
+    rcon_mute "setblock ${half_cage_size} ${world_height} ${x} ${cage_block} replace"
+    rcon_mute "setblock -${half_cage_size} ${world_height} ${x} ${cage_block} replace"
 
+    # remove previous line to update progress
+    echo -ne "${i}/${cage_size}\r"
+done
+echo -ne "\n"
+
+echo "Minecraft server ${cont_name}:${server_port} ready!"

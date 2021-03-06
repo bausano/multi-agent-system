@@ -3,7 +3,7 @@ can be used to execute op commands. The CLI can be called from within a
 container:
 
 ```bash
-mc rcon-cli ${cmd}
+rcon-cli ${cmd}
 ```
 
 # List of commands
