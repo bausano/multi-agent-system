@@ -1,3 +1,14 @@
+The [docker image `itzg/minecraft-server`][mc-image] contains a CLI tool which
+can be used to execute op commands. The CLI can be called from within a
+container:
+
+```bash
+mc rcon-cli ${cmd}
+```
+
+# List of commands
+
+```
 /advancement (grant|revoke)
 /attribute <target> <attribute> (base|get|modifier)
 /ban <targets> [<reason>]
@@ -20,13 +31,22 @@
 /forceload (add|query|remove)
 /function <name>
 /gamemode (adventure|creative|spectator|survival)
-/gamerule (announceAdvancements|commandBlockOutput|disableElytraMovementCheck|disableRaids|doDaylightCycle|doEntityDrops|doFireTick|doImmediateRespawn|doInsomnia|doLimitedCrafting|doMobLoot|doMobSpawning|doPatrolSpawning|doTileDrops|doTraderSpawning|doWeatherCycle|drowningDamage|fallDamage|fireDamage|forgiveDeadPlayers|keepInventory|logAdminCommands|maxCommandChainLength|maxEntityCramming|mobGriefing|naturalRegeneration|randomTickSpeed|reducedDebugInfo|sendCommandFeedback|showDeathMessages|spawnRadius|spectatorsGenerateChunks|universalAnger)
+/gamerule (announceAdvancements|commandBlockOutput|disableElytraMovementCheck|
+    disableRaids|doDaylightCycle|doEntityDrops|doFireTick|doImmediateRespawn|
+    doInsomnia|doLimitedCrafting|doMobLoot|doMobSpawning|doPatrolSpawning|
+    doTileDrops|doTraderSpawning|doWeatherCycle|drowningDamage|fallDamage|
+    fireDamage|forgiveDeadPlayers|keepInventory|logAdminCommands|
+    maxCommandChainLength|maxEntityCramming|mobGriefing|naturalRegeneration|
+    randomTickSpeed|reducedDebugInfo|sendCommandFeedback|showDeathMessages|
+    spawnRadius|spectatorsGenerateChunks|universalAnger)
 /give <targets> <item> [<count>]
 /help [<command>]
 /kick <targets> [<reason>]
 /kill [<targets>]
 /list [uuids]
-/locate (bastion_remnant|buried_treasure|desert_pyramid|endcity|fortress|igloo|jungle_pyramid|mansion|mineshaft|monument|nether_fossil|ocean_ruin|pillager_outpost|ruined_portal|shipwreck|stronghold|swamp_hut|village)
+/locate (bastion_remnant|buried_treasure|desert_pyramid|endcity|fortress|igloo|
+    jungle_pyramid|mansion|mineshaft|monument|nether_fossil|ocean_ruin|
+    pillager_outpost|ruined_portal|shipwreck|stronghold|swamp_hut|village)
 /locatebiome <biome>
 /loot (give|insert|replace|spawn)
 /me <action>
@@ -35,7 +55,8 @@
 /pardon <targets>
 /pardon-ip <target>
 /particle <name> [<pos>]
-/playsound <sound> (ambient|block|hostile|master|music|neutral|player|record|voice|weather)
+/playsound <sound>
+    (ambient|block|hostile|master|music|neutral|player|record|voice|weather)
 /recipe (give|take)
 /reload
 /replaceitem (block|entity)
@@ -53,7 +74,8 @@
 /spectate [<target>]
 /spreadplayers <center> <spreadDistance> <maxRange> (under|<respectTeams>)
 /stop
-/stopsound <targets> [*|ambient|block|hostile|master|music|neutral|player|record|voice|weather]
+/stopsound <targets>
+    [*|ambient|block|hostile|master|music|neutral|player|record|voice|weather]
 /summon <entity> [<pos>]
 /tag <targets> (add|list|remove)
 /team (add|empty|join|leave|list|modify|remove)
@@ -71,4 +93,7 @@
 /whitelist (add|list|off|on|reload|remove)
 /worldborder (add|center|damage|get|set|warning)
 /xp -> experience
+```
 
+<!-- References -->
+[mc-image]: https://github.com/itzg/docker-minecraft-server

@@ -1,14 +1,36 @@
+# Communication in multi-agent systems (MAS)
+Communication is an emergent behaviour in multi-agent systems. An agent under
+this behaviour transmits signals with the _intention_ of informing peers about
+an internal or external state. An agent’s peers are other agents in the
+environment whose _goals are aligned_ with goals of the agent. All agents
+pursuing common goal in an environment form a collective.
 
+This source code goes hand in hand with my [series of articles on communication
+in MAS][manyagents-communication]. Each experiment is or will be implemented
+here.
 
-`source ./venv/bin/activate`
-`black src`
+The [Minecraft adapter](./mc-adapter) is a Websocket server which serves as a
+medium between the ML algorithms and Minecraft. It's responsibilities are:
+- maintain connection to the Minecraft server for each agent
+- collect the environment into a form suitable for ML
+- relays actions from ML into Minecraft bot actions
+- calculate rewards
 
-`pip install websockets asyncio keras-rl`
+The [python ML](./rl) is still WIP, there isn't much to see yet.
 
-TODO: Docker compose which runs mc server, mc adapter and the bots.
+---
+TODO:
 
+- Document how to set up python ML:
+    - `source ./venv/bin/activate`
+    - `black src`
+    - `pip install websockets asyncio keras-rl`
+- Docker compose which runs mc server and mc adapter.
+- Sort out following links:
+    - https://github.com/dennybritz/reinforcement-learning
+    - https://github.com/keras-rl/keras-rl/tree/master/examples
+    - https://stackoverflow.com/questions/44469266/how-to-implement-custom-environment-in-keras-rl-openai-gym
+    - https://github.com/openai/gym/blob/master/gym/envs/toy_text/hotter_colder.py
 
-https://github.com/dennybritz/reinforcement-learning
-https://github.com/keras-rl/keras-rl/tree/master/examples
-https://stackoverflow.com/questions/44469266/how-to-implement-custom-environment-in-keras-rl-openai-gym
-https://github.com/openai/gym/blob/master/gym/envs/toy_text/hotter_colder.py
+<!-- References -->
+[manyagents-communication]: https://manyagents.ai/tags/communication
