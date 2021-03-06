@@ -10,6 +10,22 @@ import { Config } from "@/models/config";
 import { Umwelt } from "./contracts/umwelt";
 import { hashString } from "@/misc";
 
+/**
+ * The key of this object is the string key send in
+ * a message body as "route":
+ *
+ * ```json
+ * {
+ *   "route": "...",
+ *   "payload": { ... },
+ * }
+ * ```
+ */
+const routes = {
+    init: { handle: createPredator },
+    look: { handle: lookAt },
+};
+
 export class PredatorPreyPursuit implements Experiment<Predator> {
     constructor(private config: Config) {
         //
@@ -40,32 +56,14 @@ export class PredatorPreyPursuit implements Experiment<Predator> {
 }
 
 /**
- * Defines routing, the key of this object is the string key send in
- * a message body as "route":
- *
- * ```json
- * {
- *   "route": "...",
- *   "payload": { ... },
- * }
- * ```
- */
-const routes: { [path: string]: Route<Predator> } = {
-    init: { handle: createPredator },
-    look: { handle: lookAt },
-};
-
-/**
  * Called by python module when it connects for the first time.
  * We create minecraft bot and wait for it to be successfully spawned.
  */
+type InitPayload = { username?: string; nearestEntitiesToSend?: number };
 async function createPredator(
     state: AppState<Predator>,
     predatorId: string,
-    {
-        username,
-        nearestEntitiesToSend,
-    }: { username?: string; nearestEntitiesToSend?: number }
+    { username, nearestEntitiesToSend }: InitPayload
 ): Promise<Response<{}>> {
     if (!username || typeof username !== "string") {
         throw new Error(`Invalid username ${username}`);
@@ -130,6 +128,11 @@ async function lookAt(
     return Response.empty();
 }
 
+/**
+ * Updates the ML agent on what's current environment in the game like. Ideally
+ * this event should be called frequently so that the agent has fresh data to
+ * work with.
+ */
 async function sendState(
     state: AppState<Predator>,
     predatorId: string
@@ -164,7 +167,8 @@ async function sendState(
             // We only export x and z coordinate because we assume that the
             // distance to bedrock is constant.
             return [
-                hashString(entity.username || entity.name),
+                // "|| 1" to reserve zero for padding
+                hashString(entity.username || entity.name) || 1,
                 sqDist,
                 entity.position.x,
                 entity.position.z,
@@ -173,6 +177,16 @@ async function sendState(
                 entity.health || 20,
             ];
         });
+
+    // if there are less entities around the agent than this limit, pad
+    // rest of the vector with zeroes
+    // this removes the burden from the ML script
+    const entitiesToPad =
+        nearbyEntities.length - predator.nearestEntitiesToSend;
+    for (let i = 0; i < entitiesToPad; i++) {
+        // the entity vec has seven dimensions, see above
+        nearbyEntities.push([0, 0, 0, 0, 0, 0, 0]);
+    }
 
     // Returns fences in 3x3 area around bot into a 9D vector.
     function wallsAround(bot: Bot): number[] {

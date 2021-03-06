@@ -36,7 +36,17 @@ export class App<T extends Agent> {
                 )
             );
 
-            ws.on("close", () => this.closeConn(connId));
+            // starts all periodic events
+            const intervals = experiment
+                .events()
+                .map((event) =>
+                    setInterval(
+                        () => event.run(this.appState, connId),
+                        event.periodMs
+                    )
+                );
+
+            ws.on("close", () => this.closeConn(connId, intervals));
 
             // acknowledges the client
             this.sendOk(conn, new Response("ready"));
@@ -72,7 +82,9 @@ export class App<T extends Agent> {
     /**
      * Closes agent's connection and removes it from app state.
      */
-    private async closeConn(connId: string) {
+    private async closeConn(connId: string, intervals: NodeJS.Timeout[]) {
+        intervals.map(clearInterval);
+
         const agent = this.appState.getAgent(connId);
         if (!agent) {
             console.warn(
