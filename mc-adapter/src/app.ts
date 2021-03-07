@@ -30,27 +30,37 @@ export class App<T extends Agent> {
             // agent a message came.
             const connId = uuidv4();
 
-            ws.on("message", async (rawMessage: string) =>
+            conn.on("message", async (rawMessage: string) =>
                 this.handleMessage(conn, connId, rawMessage).catch((err) =>
                     this.sendErr(conn, err)
                 )
             );
 
-            // starts all periodic events
-            const intervals = experiment
-                .events()
-                .map((event) =>
-                    setInterval(
-                        () => event.run(this.appState, connId),
-                        event.periodMs
-                    )
-                );
-
-            ws.on("close", () => this.closeConn(connId, intervals));
+            const events = this.startEvents(conn, connId);
+            conn.on("close", () => this.closeConn(connId, events));
 
             // acknowledges the client
             this.sendOk(conn, new Response("ready"));
         });
+    }
+
+    /**
+     * Events are functions executed periodically.
+     */
+    private startEvents(conn: WebSocket, connId: string): NodeJS.Timeout[] {
+        return this.experiment.events().map((event) =>
+            setInterval(() => {
+                event
+                    .run(this.appState, connId)
+                    .then((response) => this.sendOk(conn, response))
+                    .catch((err) =>
+                        console.error(
+                            `Error in event ${event.name} (connection ${connId}):`,
+                            err
+                        )
+                    );
+            }, event.periodMs)
+        );
     }
 
     /**
@@ -73,6 +83,7 @@ export class App<T extends Agent> {
         const routePath: string = String(serverMessage.route);
         const payload: any = serverMessage.payload;
 
+        console.log(`Received message from ${connId} on route '${routePath}'`);
         const route = this.experiment.getRouteOrErr(routePath);
         const response = await route.handle(this.appState, connId, payload);
 
@@ -113,10 +124,13 @@ export class App<T extends Agent> {
      * Sends error message to the client.
      */
     private sendErr(conn: WebSocket, err: Error) {
+        const message = `${err.name}: ${err.message}`;
+        console.log(`Sending following error to the client:`, message);
+
         conn.send(
             JSON.stringify({
                 status: "err",
-                message: `${err.name}: ${err.message}`,
+                message,
             })
         );
     }

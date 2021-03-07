@@ -57,5 +57,14 @@ export class Config {
             host: env.MC_HOST,
             port: parseInt(env.MC_PORT),
         };
+
+        console.log(`
+                    The adapter port is ${this.serverPort} and it supports up
+                    to ${this.maxAgents} agents. The state is send every
+                    ${this.sendStatePeriodMs}ms to them.
+
+                    The Minecraft server runs on
+                    ${this.mcAddr.host}:${this.mcAddr.port}.
+        `);
     }
 }

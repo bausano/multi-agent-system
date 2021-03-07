@@ -3,6 +3,8 @@ import { AppState } from "@/models/app_state";
 import { Response } from "@/models/response";
 
 export interface Event<T extends Agent> {
+    name: string;
+
     /**
      * How often should the event be executed.
      */

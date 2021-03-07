@@ -48,6 +48,7 @@ export class PredatorPreyPursuit implements Experiment<Predator> {
     public events(): Event<Predator>[] {
         return [
             {
+                name: "sendState",
                 periodMs: this.config.sendStatePeriodMs,
                 run: sendState,
             },
@@ -69,7 +70,7 @@ async function createPredator(
         throw new Error(`Invalid username ${username}`);
     }
 
-    if (!nearestEntitiesToSend || Number.isFinite(nearestEntitiesToSend)) {
+    if (!nearestEntitiesToSend || !Number.isFinite(nearestEntitiesToSend)) {
         throw new Error(
             `Invalid number of nearest entities to send '${nearestEntitiesToSend}'`
         );
@@ -136,11 +137,17 @@ async function lookAt(
 async function sendState(
     state: AppState<Predator>,
     predatorId: string
-): Promise<Response<Umwelt>> {
+): Promise<Response<Umwelt | Empty>> {
     // Id of the fence block.
     const WALL_BLOCK = 191;
 
-    const predator = state.getAgentOrErr(predatorId);
+    const predator = state.getAgent(predatorId);
+    // the client didn't send init message just yet
+    if (!predator) {
+        return Response.empty();
+    }
+
+    console.log(`Send state for predator ${predatorId}`);
     const bot = predator.bot;
 
     // gets nearby entities and sorts them by distance
