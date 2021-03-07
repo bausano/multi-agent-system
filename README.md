@@ -10,11 +10,11 @@ in MAS][manyagents-communication]. Each experiment is or will be implemented
 here.
 
 The [Minecraft adapter](./mc-adapter) is a Websocket server which serves as a
-medium between the ML algorithms and Minecraft. It's responsibilities are:
-- maintain connection to the Minecraft server for each agent
-- collect the environment into a form suitable for ML
-- relays actions from ML into Minecraft bot actions
-- calculate rewards
+medium between the ML algorithms and Minecraft. It's responsibilities are to
+- maintain connection to the Minecraft server for each agent;
+- collect the environment into a form suitable for ML;
+- relay actions from ML into Minecraft bot actions;
+- calculate rewards.
 
 The [python ML](./rl) is still WIP, there isn't much to see yet.
 
