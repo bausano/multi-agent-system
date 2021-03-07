@@ -24,9 +24,6 @@ readonly cage_block="minecraft:oak_fence"
 readonly admin_nick=${ADMIN_NICK:-porkbrain}
 readonly cont_name="experiment_ppp"
 
-echo "World height: ${world_height}"
-echo "Cage size: ${cage_size}"
-
 function rcon {
     ## Executes given command in rcon-cli.
 
@@ -40,10 +37,11 @@ function rcon_mute {
 
     local cmd=$1
 
-    1>/dev/null rcon ${cmd}
+    1>/dev/null rcon "${cmd}"
 }
 
-echo "Spawning container '${cont_name}' in detached mode on port ${server_port}..."
+echo
+echo "Spawning a container '${cont_name}' in a detached mode on port ${server_port}..."
 docker run -d --rm \
     -p ${server_port}:25565 \
     --name "${cont_name}" \
@@ -56,7 +54,7 @@ docker run -d --rm \
     -e MODE=survival \
     itzg/minecraft-server
 
-echo "Waiting for server to be up..."
+echo "Waiting for the Minecraft server to be up..."
 # temporarily allow commands to fail as we're checking the status manually
 set +e
 2>/dev/null 1>&2 rcon "help"
@@ -68,7 +66,15 @@ while [ $? -ne 0 ]; do
 done
 set -e
 
+echo
+echo "Setting up the environment..."
+# sets spawn to [0, 4, 0]
+rcon "setworldspawn 0 ${world_height} 0"
+# gives admin full permissions
+rcon "op ${admin_nick}"
+
 # creates the cage to which the entities are constrained
+# one side is "cage_size" long, in each iteration it lays 4 fences
 #
 # # Example
 # Assume that the "cage_size" is 100.
@@ -85,18 +91,11 @@ set -e
 #     o--------------------------o
 # [-50; -50]                  [50; -50]
 # ```
-
-echo "Setting up environment..."
-# sets spawn to [0, 4, 0]
-rcon "setworldspawn 0 ${world_height} 0"
-# gives admin full permissions
-rcon "op ${admin_nick}"
-
-# builds the cage, one side is "cage_size" long, in each iteration it lays
-# 4 fences
+#
 # TODO: we can perhaps run all jobs in background and then just await then all
 # at the end of the script to speed up
-echo "Building cage..."
+echo
+echo "Building the cage which bounds the experiment..."
 for i in $(seq 0 $cage_size)
 do
     # goes from -50 to 50 over the course of the loop
