@@ -18,19 +18,5 @@ medium between the ML algorithms and Minecraft. It's responsibilities are:
 
 The [python ML](./rl) is still WIP, there isn't much to see yet.
 
----
-TODO:
-
-- Document how to set up python ML:
-    - `source ./venv/bin/activate`
-    - `black src`
-    - `pip install websockets asyncio keras-rl`
-- Docker compose which runs mc server and mc adapter.
-- Sort out following links:
-    - https://github.com/dennybritz/reinforcement-learning
-    - https://github.com/keras-rl/keras-rl/tree/master/examples
-    - https://stackoverflow.com/questions/44469266/how-to-implement-custom-environment-in-keras-rl-openai-gym
-    - https://github.com/openai/gym/blob/master/gym/envs/toy_text/hotter_colder.py
-
 <!-- References -->
 [manyagents-communication]: https://manyagents.ai/tags/communication
