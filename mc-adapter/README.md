@@ -133,6 +133,9 @@ action client message
 }
 ```
 
+Where both `x` and `z` are in `[-1; 1]` (they are normalized in the adapter).
+
+
 <!-- Invisible List of References -->
 [mineflayer-git]: https://github.com/PrismarineJS/mineflayer
 [websockets-npm]: https://www.npmjs.com/package/websocket

@@ -18,7 +18,7 @@ pip install black websockets asyncio \
 To active the environment:
 
 ```bash
-cd kerasenv && source bin/activate
+cd kerasenv && source bin/activate && cd ..
 ```
 
 To quit the environment:

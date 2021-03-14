@@ -23,7 +23,7 @@ async def connect_to_adapter():
             # TODO: put all into one list of numbers.
             # TODO: store above + reward in an env.
             print("State update message")
-            await websocket.send(action_message(10, 10))
+            await websocket.send(action_message(-0.5, -0.5))
 
 
 async def recv_message(websocket):
@@ -47,7 +47,7 @@ def init_message(username, nearest_entities_to_send):
 
 
 def action_message(x, z):
-    return json.dumps({"route": "look", "payload": {"x": x, "z": z}})
+    return json.dumps({"route": "turn", "payload": {"x": x, "z": z}})
 
 
 asyncio.get_event_loop().run_until_complete(connect_to_adapter())

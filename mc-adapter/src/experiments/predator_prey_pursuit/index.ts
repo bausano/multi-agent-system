@@ -23,7 +23,7 @@ import { hashString } from "@/misc";
  */
 const routes = {
     init: { handle: createPredator },
-    look: { handle: lookAt },
+    turn: { handle: turnTowards },
 };
 
 export class PredatorPreyPursuit implements Experiment<Predator> {
@@ -107,10 +107,15 @@ async function createPredator(
 }
 
 /**
- * Instruct the minecraft bot to look at given point. Since the bot is
- * configured to always walk forward, this results in the change of direction.
+ * Given a 2D vector, we normalize it and use it to make the bot look towards
+ * [bot_pos.x + vector.x; bot_z + vector.z] (note that the 2D vector has x, z
+ * dimensions, because in Minecraft the 2D plane is x, z, and the y coord is
+ * used for height).
+ *
+ * Since the bot is configured to always walk forward, this results in the
+ * change of direction.
  */
-async function lookAt(
+async function turnTowards(
     state: AppState<Predator>,
     predatorId: string,
     { x, z }: { x?: number; z?: number }
@@ -119,12 +124,25 @@ async function lookAt(
         throw new Error(`Invalid point coordinates for lookAt: ${x}, ${z}`);
     }
 
+    // don't change direction
+    if (x === 0 && z === 0) {
+        return Response.empty();
+    }
+
     const bot = state.getAgentOrErr(predatorId).bot;
+    const botPos = bot.entity.position;
 
     // +1 because the position is of the bot's legs, but we want it to keep
     // looking straight
-    const y = bot.entity.position.y + 1;
-    bot.lookAt(new Vec3(x, y, z));
+    const y = botPos.y + 1;
+
+    // normalizing x and z gets us the direction in which the bot should look
+    const { x: xDir, z: zDir } = new Vec3(x, 0, z).normalize();
+
+    // make the bot look at point which is in required direction
+    bot.lookAt(
+        new Vec3(botPos.x + botPos.x * xDir, y, botPos.z + botPos.z * zDir)
+    );
 
     return Response.empty();
 }
