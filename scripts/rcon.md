@@ -6,6 +6,12 @@ container:
 rcon-cli ${cmd}
 ```
 
+Example of assigning op privileges in a docker container:
+
+```bash
+docker exec experiment_ppp rcon-cli "op porkbrain"
+```
+
 # List of commands
 
 ```

@@ -32,14 +32,6 @@ function rcon {
     docker exec "${cont_name}" rcon-cli "${cmd}"
 }
 
-function rcon_mute {
-    ## Executes given command in rcon-cli but doesn't output stdout.
-
-    local cmd=$1
-
-    1>/dev/null rcon "${cmd}"
-}
-
 echo
 echo "Spawning a container '${cont_name}' in a detached mode on port ${server_port}..."
 docker run -d --rm \
@@ -70,8 +62,6 @@ echo
 echo "Setting up the environment..."
 # sets spawn to [0, 4, 0]
 rcon "setworldspawn 0 ${world_height} 0"
-# gives admin full permissions
-rcon "op ${admin_nick}"
 
 # creates the cage to which the entities are constrained
 # one side is "cage_size" long, in each iteration it lays 4 fences
@@ -92,23 +82,27 @@ rcon "op ${admin_nick}"
 # [-50; -50]                  [50; -50]
 # ```
 #
-# TODO: we can perhaps run all jobs in background and then just await then all
-# at the end of the script to speed up
+
 echo
 echo "Building the cage which bounds the experiment..."
-for i in $(seq 0 $cage_size)
-do
-    # goes from -50 to 50 over the course of the loop
-    x=$(( i - half_cage_size ))
+# builds the left vertical wall [(-50, -50); (-50, 50)]
+rcon "fill -${half_cage_size} ${world_height} -${half_cage_size} \
+-${half_cage_size} ${world_height} ${half_cage_size} \
+${cage_block} replace"
 
-    rcon_mute "setblock ${x} ${world_height} ${half_cage_size} ${cage_block} replace"
-    rcon_mute "setblock ${x} ${world_height} -${half_cage_size} ${cage_block} replace"
-    rcon_mute "setblock ${half_cage_size} ${world_height} ${x} ${cage_block} replace"
-    rcon_mute "setblock -${half_cage_size} ${world_height} ${x} ${cage_block} replace"
+# builds the right vertical wall [(50, -50); (50, 50)]
+rcon "fill ${half_cage_size} ${world_height} -${half_cage_size} \
+${half_cage_size} ${world_height} ${half_cage_size} \
+${cage_block} replace"
 
-    # remove previous line to update progress
-    echo -ne "${i}/${cage_size}\r"
-done
-echo -ne "\n"
+# builds the bottom horizontal wall [(-50, -50); (50, -50)]
+rcon "fill -${half_cage_size} ${world_height} -${half_cage_size} \
+${half_cage_size} ${world_height} -${half_cage_size} \
+${cage_block} replace"
+
+# builds the top horizontal wall [(-50, 50); (50, 50)]
+rcon "fill -${half_cage_size} ${world_height} ${half_cage_size} \
+${half_cage_size} ${world_height} ${half_cage_size} \
+${cage_block} replace"
 
 echo "Minecraft server ${cont_name}:${server_port} ready!"
