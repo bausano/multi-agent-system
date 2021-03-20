@@ -54,6 +54,7 @@ export class Agent {
                 host: config.mcAddr.host,
                 port: config.mcAddr.port,
                 username,
+                viewDistance: "tiny",
             });
 
             try {

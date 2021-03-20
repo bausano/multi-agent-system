@@ -10,6 +10,9 @@ import { Config } from "@/models/config";
 import { Umwelt } from "./contracts/umwelt";
 import { hashString } from "@/misc";
 
+// the predator see entities that are at most sqrt(100) = 10 fields distant
+const MAX_ENTITY_SQ_DIST = 100;
+
 /**
  * The key of this object is the string key send in
  * a message body as "route":
@@ -70,7 +73,12 @@ async function createPredator(
         throw new Error(`Invalid username ${username}`);
     }
 
-    if (!nearestEntitiesToSend || !Number.isFinite(nearestEntitiesToSend)) {
+    // there must be at least two entities: the bot itself and one more
+    if (
+        !nearestEntitiesToSend ||
+        !Number.isFinite(nearestEntitiesToSend) ||
+        nearestEntitiesToSend < 1
+    ) {
         throw new Error(
             `Invalid number of nearest entities to send '${nearestEntitiesToSend}'`
         );
@@ -169,12 +177,15 @@ async function sendState(
     const bot = predator.bot;
 
     // gets nearby entities and sorts them by distance
-    const allNearbyEntities = Object.values(bot.entities).map((entity) => {
-        return {
-            entity,
-            sqDist: bot.entity.position.distanceSquared(entity.position),
-        };
-    });
+    // IMPORTANT: contains also entity for the bot itself
+    const allNearbyEntities = Object.values(bot.entities)
+        .map((entity) => {
+            return {
+                entity,
+                sqDist: bot.entity.position.distanceSquared(entity.position),
+            };
+        })
+        .filter(({ sqDist }) => sqDist < MAX_ENTITY_SQ_DIST);
     allNearbyEntities.sort((a, b) => a.sqDist - b.sqDist);
 
     // filters out invalid entities and selects only limited number of them
@@ -192,7 +203,7 @@ async function sendState(
             // We only export x and z coordinate because we assume that the
             // distance to bedrock is constant.
             return [
-                // "|| 1" to reserve zero for padding
+                // "|| 1" to reserve zero for padding which uses "0"
                 hashString(entity.username || entity.name) || 1,
                 sqDist,
                 entity.position.x,

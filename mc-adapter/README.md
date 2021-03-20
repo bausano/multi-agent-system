@@ -111,7 +111,8 @@ numbers which include information about username (hashed), health, position,
 velocity and distance to the bot. This means that when flattened, the
 `entities` property contains `nearestEntitiesToSend` * 7 numbers. If there are
 less than `nearestEntitiesToSend` entities around the agent, the rest will be
-padded with zeros.
+padded with zeros. This vector also contains the bot entity itself. It
+therefore must be that `nearestEntitiesToSend` > 1.
 
 The `reward` property is a single number which tracks how much reward has the
 bot received since the last time a state update message was broadcast.
