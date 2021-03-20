@@ -24,7 +24,10 @@ observable_data_ready_event = threading.Event()
 # to the memory.
 # The "observable" has further synchronization: the
 # "observable_data_ready_event".
-shared_data = {"action": {"x": 0, "z": 0}, "observable": None}
+shared_data = {
+    "action": {"x": 0, "z": 0},
+    "observable": {"reward": 0, "walls": None, "entities": None},
+}
 
 # How many entities will the server send every time (and pad with zeros
 # if there are not enough).
@@ -50,25 +53,14 @@ async def connect_to_adapter():
             message = await recv_message(websocket)
             assert_ok(message)
 
-            reward = message["body"]["reward"]
-            walls = message["body"]["walls"]
-            # put all entities into a single list (TODO: do we want to keep it
-            # that way?, probably wanna move it to ml module anyway)
-            entities = list(np.concatenate(message["body"]["entities"]).flat)
-
             # IMPORTANT: mutating global variable ok because GIL + we're the
             #            only ones doing it here
-            shared_data["observable"] = {
-                "reward": reward,
-                "state": list(np.concatenate([walls, entities]).flat),
-            }
-
+            shared_data["observable"] = message["body"]
             # informs the ML thread that new data is ready to be consumed
             observable_data_ready_event.set()
 
-            # just reads the latest action
+            # reads the latest action decided by ML thread
             direction = shared_data["action"].copy()
-            print(direction)
 
             # send the current value of the shared action vec
             await websocket.send(action_message(direction["x"], direction["z"]))
