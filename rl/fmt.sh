@@ -1,3 +1,3 @@
 #!/bin/bash
 
-black src
+black src --line-length 80
