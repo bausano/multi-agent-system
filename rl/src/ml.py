@@ -7,5 +7,4 @@ def run_ml(
         observable_data_ready_event.wait()
         observable = shared_data["observable"].copy()
         observable_data_ready_event.clear()
-
-        shared_data["action"] = {"x": -1, "z": 0}
+        shared_data["action"] = {"x": 1, "z": 0}
