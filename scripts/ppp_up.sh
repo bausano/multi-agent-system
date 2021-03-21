@@ -6,6 +6,11 @@
 ## It creates the server and builds a cage around the [0, 4, 0] coordinate
 ## (assuming "world_height" is 4).
 ## The spawn point is set to this coordinate.
+##
+## TODO: It'd would be great if we could add [this mod][tickrate-changer] to
+## the server. That'd allow us to train the agents faster.
+##
+## [tickrate-changer]: https://github.com/Guichaguri/TickrateChanger
 
 set -e
 
